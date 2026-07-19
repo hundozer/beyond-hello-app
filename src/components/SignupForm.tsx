@@ -24,9 +24,15 @@ export default function SignupForm() {
   
   // State to show the admin dashboard panel for demonstrating persistence
   const [showAdmin, setShowAdmin] = useState(false);
+  const [showAdminToggle, setShowAdminToggle] = useState(false);
 
   // Load existing signups on mount
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('admin') === 'true' || params.get('dev') === 'true') {
+      setShowAdminToggle(true);
+    }
+
     const fetchSignups = async () => {
       try {
         const res = await fetch('/api/signup');
@@ -476,16 +482,18 @@ export default function SignupForm() {
       </div>
 
       {/* Persistence Showcase Toggle Button (Startup Admin Panel) */}
-      <div className="mt-8 border-t border-dashed border-neutral-300/60 pt-6 text-center">
-        <button
-          onClick={() => setShowAdmin(!showAdmin)}
-          className="inline-flex items-center gap-2 text-xs font-semibold text-neutral-400 hover:text-neutral-600 transition-colors bg-neutral-100 hover:bg-neutral-200/60 px-4 py-2 rounded-full cursor-pointer"
-        >
-          <Database className="w-4 h-4 text-brand-orange" />
-          <span>{showAdmin ? 'Hide Startup Registry Panel' : 'Show Local Startup Registry (Admin Panel)'}</span>
-          {showAdmin ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-        </button>
-      </div>
+      {showAdminToggle && (
+        <div className="mt-8 border-t border-dashed border-neutral-300/60 pt-6 text-center">
+          <button
+            onClick={() => setShowAdmin(!showAdmin)}
+            className="inline-flex items-center gap-2 text-xs font-semibold text-neutral-400 hover:text-neutral-600 transition-colors bg-neutral-100 hover:bg-neutral-200/60 px-4 py-2 rounded-full cursor-pointer"
+          >
+            <Database className="w-4 h-4 text-brand-orange" />
+            <span>{showAdmin ? 'Hide Startup Registry Panel' : 'Show Local Startup Registry (Admin Panel)'}</span>
+            {showAdmin ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </button>
+        </div>
+      )}
 
       {/* Admin Panel content */}
       <AnimatePresence>

@@ -68,6 +68,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (req.method === 'DELETE') {
+      const adminKey = process.env.ADMIN_API_KEY;
+      const clientKey = req.headers['x-admin-key'] || req.query.adminKey;
+
+      if (!adminKey) {
+        // If not configured, reject DELETE requests in production to prevent database wipes
+        if (process.env.NODE_ENV === 'production' || process.env.VERCEL === '1') {
+          return res.status(403).json({ 
+            success: false, 
+            error: 'DELETE method is disabled in production unless ADMIN_API_KEY is set in Vercel.' 
+          });
+        }
+      } else if (clientKey !== adminKey) {
+        return res.status(401).json({ success: false, error: 'Unauthorized: Invalid admin key.' });
+      }
+
       await clearSignups();
       return res.status(200).json({ success: true, message: 'All registrations cleared.' });
     }
