@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getSignups, addSignup, clearSignups } from './_storage';
+import { getSignups, addSignup, clearSignups } from './_storage.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Setup CORS headers for ease of deployment
