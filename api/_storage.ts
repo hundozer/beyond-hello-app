@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { open, Database } from 'sqlite';
 import sqlite3 from 'sqlite3';
+import { Pool } from 'pg';
 
 export interface SignupData {
   id: string;
@@ -19,6 +20,49 @@ let inMemorySignups: SignupData[] = [];
 let hasLoadedInMemory = false;
 let sqliteDb: Database | null = null;
 let useSQLite = true;
+
+// PostgreSQL Connection Pool
+let pgPool: Pool | null = null;
+
+const initPgPool = (): Pool => {
+  if (!pgPool) {
+    pgPool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: {
+        rejectUnauthorized: false, // Neon requires SSL
+      },
+    });
+  }
+  return pgPool;
+};
+
+// Check if PostgreSQL is configured
+const isPgConfigured = (): boolean => {
+  return !!process.env.DATABASE_URL;
+};
+
+// Initialize PostgreSQL Table
+const initPgTable = async (): Promise<Pool> => {
+  const pool = initPgPool();
+  const client = await pool.connect();
+  try {
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS waitlist (
+        id VARCHAR(50) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        "ageRange" VARCHAR(50) NOT NULL,
+        gender VARCHAR(50),
+        "lookingFor" VARCHAR(255),
+        city VARCHAR(100) NOT NULL,
+        timestamp VARCHAR(100) NOT NULL
+      );
+    `);
+  } finally {
+    client.release();
+  }
+  return pool;
+};
 
 // Determine storage paths based on environment
 const getDbPath = (): string => {
@@ -155,8 +199,22 @@ const clearSignupsJson = async (): Promise<void> => {
   }
 };
 
-// Exported high-level storage functions supporting SQLite with JSON fallback
+// Exported high-level storage functions supporting Postgres, SQLite, and JSON fallbacks
 export async function getSignups(): Promise<SignupData[]> {
+  // Tier 1: PostgreSQL
+  if (isPgConfigured()) {
+    try {
+      const pool = await initPgTable();
+      const res = await pool.query<SignupData>(
+        'SELECT id, name, email, "ageRange", gender, "lookingFor", city, timestamp FROM waitlist ORDER BY timestamp ASC'
+      );
+      return res.rows;
+    } catch (e) {
+      console.error('PostgreSQL failed to get signups, falling back to next storage tier:', e);
+    }
+  }
+
+  // Tier 2: SQLite
   if (useSQLite) {
     try {
       const db = await initSQLite();
@@ -164,15 +222,59 @@ export async function getSignups(): Promise<SignupData[]> {
       return rows;
     } catch (e) {
       console.warn('SQLite failed to get signups, falling back to JSON storage:', e);
-      useSQLite = false; // Disable SQLite for subsequent calls
+      useSQLite = false;
     }
   }
+
+  // Tier 3: JSON
   return getSignupsJson();
 }
 
 export async function addSignup(
   data: Omit<SignupData, 'id' | 'timestamp'>
 ): Promise<{ signup: SignupData; ticketNum: number }> {
+  // Tier 1: PostgreSQL
+  if (isPgConfigured()) {
+    try {
+      const pool = await initPgTable();
+      
+      // Check duplicate
+      const dupQuery = await pool.query<SignupData>('SELECT * FROM waitlist WHERE LOWER(email) = $1', [data.email.toLowerCase()]);
+      if (dupQuery.rows.length > 0) {
+        const duplicate = dupQuery.rows[0];
+        const countQuery = await pool.query<{ count: string }>('SELECT COUNT(*) as count FROM waitlist WHERE timestamp < $1', [duplicate.timestamp]);
+        const ticketNum = 942 + parseInt(countQuery.rows[0].count, 10) + 1;
+        return { signup: duplicate, ticketNum };
+      }
+
+      const id = Math.random().toString(36).substring(2, 9);
+      const timestamp = new Date().toLocaleString();
+      const newSignup: SignupData = {
+        id,
+        name: data.name.trim(),
+        email: data.email.trim(),
+        ageRange: data.ageRange,
+        gender: data.gender,
+        lookingFor: data.lookingFor,
+        city: data.city.trim(),
+        timestamp,
+      };
+
+      await pool.query(
+        'INSERT INTO waitlist (id, name, email, "ageRange", gender, "lookingFor", city, timestamp) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+        [id, newSignup.name, newSignup.email, newSignup.ageRange, newSignup.gender, newSignup.lookingFor, newSignup.city, timestamp]
+      );
+
+      const totalCount = await pool.query<{ count: string }>('SELECT COUNT(*) as count FROM waitlist');
+      const ticketNum = 942 + parseInt(totalCount.rows[0].count, 10);
+
+      return { signup: newSignup, ticketNum };
+    } catch (e) {
+      console.error('PostgreSQL failed to add signup, falling back to next storage tier:', e);
+    }
+  }
+
+  // Tier 2: SQLite
   if (useSQLite) {
     try {
       const db = await initSQLite();
@@ -180,7 +282,6 @@ export async function addSignup(
       // Check duplicate
       const duplicate = await db.get<SignupData>('SELECT * FROM waitlist WHERE LOWER(email) = ?', [data.email.toLowerCase()]);
       if (duplicate) {
-        // Find ticket index by counting rows before this entry
         const countBefore = await db.get<{ count: number }>('SELECT COUNT(*) as count FROM waitlist WHERE timestamp < ?', [duplicate.timestamp]);
         const ticketNum = 942 + (countBefore?.count || 0) + 1;
         return { signup: duplicate, ticketNum };
@@ -213,10 +314,24 @@ export async function addSignup(
       useSQLite = false;
     }
   }
+
+  // Tier 3: JSON
   return addSignupJson(data);
 }
 
 export async function clearSignups(): Promise<void> {
+  // Tier 1: PostgreSQL
+  if (isPgConfigured()) {
+    try {
+      const pool = await initPgTable();
+      await pool.query('DELETE FROM waitlist');
+      return;
+    } catch (e) {
+      console.error('PostgreSQL failed to clear database:', e);
+    }
+  }
+
+  // Tier 2: SQLite
   if (useSQLite) {
     try {
       const db = await initSQLite();
@@ -227,5 +342,7 @@ export async function clearSignups(): Promise<void> {
       useSQLite = false;
     }
   }
+
+  // Tier 3: JSON
   await clearSignupsJson();
 }
