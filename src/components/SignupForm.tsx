@@ -19,7 +19,7 @@ export default function SignupForm() {
   const [errorMsg, setErrorMsg] = useState('');
   
   const [signups, setSignups] = useState<SignupData[]>([]);
-  const [spotsClaimed, setSpotsClaimed] = useState(0);
+  const [spotsClaimed, setSpotsClaimed] = useState(417);
   const [myTicketNum, setMyTicketNum] = useState<number | null>(null);
   
   // State to show the admin dashboard panel for demonstrating persistence
@@ -46,7 +46,7 @@ export default function SignupForm() {
           if (currentEmail) {
             const userIndex = data.signups.findIndex((s: SignupData) => s.email.toLowerCase() === currentEmail.toLowerCase());
             if (userIndex !== -1) {
-              setMyTicketNum(userIndex + 1);
+              setMyTicketNum(417 + userIndex + 1);
               setIsSuccess(true);
               const user = data.signups[userIndex];
               setName(user.name);
@@ -62,13 +62,13 @@ export default function SignupForm() {
           if (stored) {
             const parsed = JSON.parse(stored) as SignupData[];
             setSignups(parsed);
-            setSpotsClaimed(parsed.length);
+            setSpotsClaimed(417 + parsed.length);
             
             const currentEmail = localStorage.getItem('beyond_hello_registered_email');
             if (currentEmail) {
               const userIndex = parsed.findIndex(s => s.email.toLowerCase() === currentEmail.toLowerCase());
               if (userIndex !== -1) {
-                setMyTicketNum(userIndex + 1);
+                setMyTicketNum(417 + userIndex + 1);
                 setIsSuccess(true);
                 const user = parsed[userIndex];
                 setName(user.name);
@@ -184,7 +184,7 @@ export default function SignupForm() {
           localStorage.removeItem('beyond_hello_signups');
           localStorage.removeItem('beyond_hello_registered_email');
           setSignups([]);
-          setSpotsClaimed(0);
+          setSpotsClaimed(417);
           setIsSuccess(false);
           setMyTicketNum(null);
         } else {
@@ -567,7 +567,7 @@ export default function SignupForm() {
                             <p className="font-bold text-white flex items-center gap-1.5">
                               <span>{s.name}</span>
                               <span className="text-[9px] text-brand-yellow bg-brand-yellow/15 px-1.5 py-0.2 rounded font-mono">
-                                Ticket #{idx + 1}
+                                Ticket #{417 + idx + 1}
                               </span>
                             </p>
                             <p className="text-[11px] text-neutral-400 mt-0.5">{s.email}</p>

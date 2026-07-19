@@ -158,7 +158,7 @@ const addSignupJson = async (
   // Prevent duplicate email check
   const duplicate = signups.find(s => s.email.toLowerCase() === data.email.toLowerCase());
   if (duplicate) {
-    const ticketNum = signups.findIndex(s => s.email.toLowerCase() === data.email.toLowerCase()) + 1;
+    const ticketNum = 417 + signups.findIndex(s => s.email.toLowerCase() === data.email.toLowerCase()) + 1;
     return { signup: duplicate, ticketNum };
   }
 
@@ -176,7 +176,7 @@ const addSignupJson = async (
   signups.push(newSignup);
   inMemorySignups = signups;
   
-  const ticketNum = signups.length;
+  const ticketNum = 417 + signups.length;
   const filePath = getJsonPath();
 
   try {
@@ -245,7 +245,7 @@ export async function addSignup(
       if (dupQuery.rows.length > 0) {
         const duplicate = dupQuery.rows[0];
         const countQuery = await pool.query<{ count: string }>('SELECT COUNT(*) as count FROM waitlist WHERE timestamp < $1', [duplicate.timestamp]);
-        const ticketNum = parseInt(countQuery.rows[0].count, 10) + 1;
+        const ticketNum = 417 + parseInt(countQuery.rows[0].count, 10) + 1;
         return { signup: duplicate, ticketNum };
       }
 
@@ -268,7 +268,7 @@ export async function addSignup(
       );
 
       const totalCount = await pool.query<{ count: string }>('SELECT COUNT(*) as count FROM waitlist');
-      const ticketNum = parseInt(totalCount.rows[0].count, 10);
+      const ticketNum = 417 + parseInt(totalCount.rows[0].count, 10);
 
       return { signup: newSignup, ticketNum };
     } catch (e) {
@@ -285,7 +285,7 @@ export async function addSignup(
       const duplicate = await db.get<SignupData>('SELECT * FROM waitlist WHERE LOWER(email) = ?', [data.email.toLowerCase()]);
       if (duplicate) {
         const countBefore = await db.get<{ count: number }>('SELECT COUNT(*) as count FROM waitlist WHERE timestamp < ?', [duplicate.timestamp]);
-        const ticketNum = (countBefore?.count || 0) + 1;
+        const ticketNum = 417 + (countBefore?.count || 0) + 1;
         return { signup: duplicate, ticketNum };
       }
 
@@ -308,7 +308,7 @@ export async function addSignup(
       );
 
       const totalCount = await db.get<{ count: number }>('SELECT COUNT(*) as count FROM waitlist');
-      const ticketNum = (totalCount?.count || 1);
+      const ticketNum = 417 + (totalCount?.count || 1);
 
       return { signup: newSignup, ticketNum };
     } catch (e) {
