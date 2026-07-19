@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { open, Database } from 'sqlite';
-import sqlite3 from 'sqlite3';
+import type { Database } from 'sqlite';
 import { Pool } from 'pg';
 
 export interface SignupData {
@@ -82,6 +81,9 @@ const getJsonPath = (): string => {
 // Initialize SQLite database
 const initSQLite = async (): Promise<Database> => {
   if (sqliteDb) return sqliteDb;
+
+  const { open } = await import('sqlite');
+  const sqlite3 = (await import('sqlite3')).default;
 
   const dbPath = getDbPath();
   const dir = path.dirname(dbPath);
