@@ -564,8 +564,6 @@ export default function App() {
             <span className="hover:text-neutral-400 cursor-pointer">Terms of Service</span>
             <span>•</span>
             <span className="hover:text-neutral-400 cursor-pointer">Privacy Policy</span>
-            <span>•</span>
-            <span className="hover:text-neutral-400 cursor-pointer text-brand-orange font-bold">Zsolt Galfalvi</span>
           </div>
         </div>
       </footer>
