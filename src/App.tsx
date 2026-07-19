@@ -29,7 +29,7 @@ export default function App() {
     "🔥 Klara & Jakub just unlocked the Vinohrady Coffee Quest!",
     "📸 Lukas solved the Sunset riddle at Letná Park!",
     "🍜 8 couples are currently casting blind foodie votes in Karlín!",
-    "🚀 Prague Launch list is filling up! 942/1,000 spots claimed.",
+    "🚀 Prague Launch list is filling up! Join now to lock in your founding spot.",
     "🎲 New Icebreaker prompt unlocked: 'What local custom do you defend?'"
   ];
 
@@ -132,7 +132,7 @@ export default function App() {
       {showNotification && (
         <div id="top-announcement-banner" className="bg-[#1A1A1A] text-white text-xs py-2.5 px-4 text-center font-semibold relative flex items-center justify-center gap-2 border-b border-neutral-800">
           <span className="bg-brand-orange text-[9px] font-black uppercase px-2 py-0.5 rounded animate-pulse">Live</span>
-          <span>🚀 Join the exclusive Belgrade and Prague launch lists! Limited spots left for Prague Founder Seats.</span>
+          <span>🚀 Join the exclusive Prague launch list! Limited spots left for Prague Founder Seats.</span>
           <button 
             onClick={() => setShowNotification(false)}
             className="absolute right-4 hover:text-brand-orange transition-colors p-1"

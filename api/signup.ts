@@ -21,7 +21,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const list = await getSignups();
       return res.status(200).json({
         success: true,
-        count: 942 + list.length,
+        count: list.length,
         signups: list,
       });
     }

@@ -12,14 +12,14 @@ export default function SignupForm() {
   const [ageRange, setAgeRange] = useState('');
   const [gender, setGender] = useState('');
   const [lookingFor, setLookingFor] = useState('');
-  const [city, setCity] = useState('');
+  const [city, setCity] = useState('Prague');
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   
   const [signups, setSignups] = useState<SignupData[]>([]);
-  const [spotsClaimed, setSpotsClaimed] = useState(942);
+  const [spotsClaimed, setSpotsClaimed] = useState(0);
   const [myTicketNum, setMyTicketNum] = useState<number | null>(null);
   
   // State to show the admin dashboard panel for demonstrating persistence
@@ -46,12 +46,12 @@ export default function SignupForm() {
           if (currentEmail) {
             const userIndex = data.signups.findIndex((s: SignupData) => s.email.toLowerCase() === currentEmail.toLowerCase());
             if (userIndex !== -1) {
-              setMyTicketNum(942 + userIndex + 1);
+              setMyTicketNum(userIndex + 1);
               setIsSuccess(true);
               const user = data.signups[userIndex];
               setName(user.name);
               setEmail(user.email);
-              setCity(user.city || '');
+              setCity(user.city || 'Prague');
             }
           }
         }
@@ -62,18 +62,18 @@ export default function SignupForm() {
           if (stored) {
             const parsed = JSON.parse(stored) as SignupData[];
             setSignups(parsed);
-            setSpotsClaimed(942 + parsed.length);
+            setSpotsClaimed(parsed.length);
             
             const currentEmail = localStorage.getItem('beyond_hello_registered_email');
             if (currentEmail) {
               const userIndex = parsed.findIndex(s => s.email.toLowerCase() === currentEmail.toLowerCase());
               if (userIndex !== -1) {
-                setMyTicketNum(942 + userIndex + 1);
+                setMyTicketNum(userIndex + 1);
                 setIsSuccess(true);
                 const user = parsed[userIndex];
                 setName(user.name);
                 setEmail(user.email);
-                setCity(user.city || '');
+                setCity(user.city || 'Prague');
               }
             }
           }
@@ -170,7 +170,7 @@ export default function SignupForm() {
       setAgeRange('');
       setGender('');
       setLookingFor('');
-      setCity('');
+      setCity('Prague');
       setMyTicketNum(null);
     }
   };
@@ -184,7 +184,7 @@ export default function SignupForm() {
           localStorage.removeItem('beyond_hello_signups');
           localStorage.removeItem('beyond_hello_registered_email');
           setSignups([]);
-          setSpotsClaimed(942);
+          setSpotsClaimed(0);
           setIsSuccess(false);
           setMyTicketNum(null);
         } else {
@@ -374,10 +374,7 @@ export default function SignupForm() {
                     onChange={(e) => setCity(e.target.value)}
                     className="w-full bg-white/60 border border-white/80 rounded-2xl px-3 py-3 text-sm focus:bg-white focus:ring-2 focus:ring-brand-orange/40 focus:border-brand-orange outline-none transition-all shadow-sm"
                   >
-                    <option value="">Select your launch city</option>
                     <option value="Prague">Prague, Czech Republic</option>
-                    <option value="Belgrade">Belgrade, Serbia</option>
-                    <option value="Other">Other City</option>
                   </select>
                 </div>
 
@@ -570,7 +567,7 @@ export default function SignupForm() {
                             <p className="font-bold text-white flex items-center gap-1.5">
                               <span>{s.name}</span>
                               <span className="text-[9px] text-brand-yellow bg-brand-yellow/15 px-1.5 py-0.2 rounded font-mono">
-                                Ticket #{942 + idx + 1}
+                                Ticket #{idx + 1}
                               </span>
                             </p>
                             <p className="text-[11px] text-neutral-400 mt-0.5">{s.email}</p>
