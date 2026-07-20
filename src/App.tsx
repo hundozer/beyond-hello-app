@@ -20,6 +20,7 @@ export default function App() {
   const [showNotification, setShowNotification] = useState(true);
   const [showNavMenu, setShowNavMenu] = useState(false);
   const [currentLocalTime, setCurrentLocalTime] = useState('11:13');
+  const [showSimulatorModal, setShowSimulatorModal] = useState(false);
 
   // Gentle Prague notification loop simulation to create "live" startup excitement
   const [toastMessage, setToastMessage] = useState<string>("");
@@ -269,13 +270,10 @@ export default function App() {
               </button>
               
               <button 
-                onClick={() => {
-                  alert("Beyond Hello is currently finishing private alpha testing! Complete the Signup Form below to secure your direct test invitation when the iOS & Android application boots.");
-                  scrollToSection('signup-section');
-                }}
+                onClick={() => setShowSimulatorModal(true)}
                 className="w-full sm:w-auto bg-neutral-900 hover:bg-neutral-800 text-white font-bold text-sm px-6 py-4 rounded-2xl transition-all flex items-center justify-center gap-2 cursor-pointer border border-neutral-800"
               >
-                <Download className="w-4 h-4" /> Download when available
+                <Smartphone className="w-4 h-4 text-brand-orange" /> Try Mobile Prototype
               </button>
             </div>
 
@@ -567,6 +565,39 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Interactive Mobile Prototype Simulator Modal */}
+      <AnimatePresence>
+        {showSimulatorModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4"
+            onClick={() => setShowSimulatorModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-neutral-950 rounded-3xl p-5 border-2 border-neutral-850 max-w-sm w-full relative shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setShowSimulatorModal(false)}
+                className="absolute top-4 right-4 text-neutral-400 hover:text-white transition-colors p-1 bg-white/5 rounded-full"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <div className="text-center mb-3">
+                <h4 className="text-sm font-black text-white">Beyond Hello Prototype</h4>
+                <p className="text-[10px] text-neutral-400 mt-0.5">Experience the end-to-end mobile flow</p>
+              </div>
+              <PhoneMockup activeScreen="splash" interactive={true} />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );
