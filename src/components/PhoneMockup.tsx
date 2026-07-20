@@ -4,7 +4,8 @@ import {
   User, Compass, Award, MailOpen, Heart, 
   MapPin, Coffee, Camera, Eye, Zap, CheckCircle2,
   Lock, Sparkles, MessageSquare, ChevronRight, X, Clock,
-  ArrowRight, Landmark, Navigation, MessageCircle, Star
+  ArrowRight, Landmark, Navigation, MessageCircle, Star,
+  Compass as CompassIcon, Inbox, Smile, RefreshCw
 } from 'lucide-react';
 
 interface PhoneMockupProps {
@@ -30,10 +31,109 @@ type ScreenState =
 
 interface ChatMessage {
   id: string;
-  sender: 'you' | 'klara';
+  sender: 'you' | 'partner';
   text: string;
   time: string;
 }
+
+interface Participant {
+  id: string;
+  name: string;
+  age: number;
+  photo: string;
+  interest: string;
+}
+
+interface Experience {
+  id: string;
+  title: string;
+  description: string;
+  location: string;
+  time: string;
+  duration: string;
+  spotsLeft: number;
+  image: string;
+  tag: string;
+  category: string;
+  participants: Participant[];
+  chatPartner: Participant;
+  chatPartnerMessage: string;
+  chatPartnerReply: string;
+  conversationStarters: string[];
+}
+
+const PARTICIPANTS: Record<string, Participant> = {
+  klara: { id: 'p1', name: 'Klara', age: 26, photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100', interest: 'Specialty Coffee' },
+  jakub: { id: 'p2', name: 'Jakub', age: 28, photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100', interest: 'Cycling' },
+  elena: { id: 'p3', name: 'Elena', age: 25, photo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100', interest: 'Reading' },
+  lukas: { id: 'p4', name: 'Lukas', age: 29, photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100', interest: 'Photography' },
+};
+
+const EXPERIENCES: Experience[] = [
+  {
+    id: 'golden-hour',
+    title: 'Golden Hour Prague Walk',
+    description: 'A relaxed evening exploring Prague\'s hidden viewpoints with interesting people.',
+    location: 'Letná Park',
+    time: 'Friday 19:00',
+    duration: '90 minutes',
+    spotsLeft: 6,
+    image: 'https://images.unsplash.com/photo-1541963463532-d68292c34b19?auto=format&fit=crop&w=300&q=80',
+    tag: '⭐ Featured Quest',
+    category: '🌳 Outdoors',
+    participants: [PARTICIPANTS.klara, PARTICIPANTS.jakub, PARTICIPANTS.elena],
+    chatPartner: PARTICIPANTS.klara,
+    chatPartnerMessage: 'Hey! Super excited for the Golden Hour walk this Friday. 🌅 Have you been to Letná Park before?',
+    chatPartnerReply: 'That sounds awesome! Let\'s meet near the Hanavský Pavilion at 19:00. See you there! 🙌',
+    conversationStarters: [
+      'What is your favorite secret overlook in Letná?',
+      'Do you prefer Prague in the morning or at sunset?',
+      'What local beer or cider do you usually grab at the beer garden?'
+    ]
+  },
+  {
+    id: 'coffee-quest',
+    title: 'Vinohrady Coffee Quest',
+    description: 'Find Prague\'s coziest hidden cafés and solve coffee riddles together.',
+    location: 'Café Mezera',
+    time: 'Saturday 14:00',
+    duration: '60 minutes',
+    spotsLeft: 4,
+    image: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=300&q=80',
+    tag: '🔥 Popular Vibe',
+    category: '☕ Coffee',
+    participants: [PARTICIPANTS.elena, PARTICIPANTS.lukas],
+    chatPartner: PARTICIPANTS.elena,
+    chatPartnerMessage: 'Hi there! Ready to hunt down the secret bookcase door at Café Mezera? ☕ I hear their flat whites are legendary.',
+    chatPartnerReply: 'Yay! Let\'s get a slice of their cinnamon roll too. See you Saturday at 14:00! 🍰',
+    conversationStarters: [
+      'What is the coziest café you have found in Vinohrady?',
+      'Are you a filter coffee fan or an espresso purist?',
+      'Do you work from cafés or use them strictly to escape screen time?'
+    ]
+  },
+  {
+    id: 'secret-jazz',
+    title: 'Old Town Secret Cellar Jazz',
+    description: 'Discover hidden live jazz tunes tucked away under Prague\'s historical cellars.',
+    location: 'U Staré Paní',
+    time: 'Sunday 20:00',
+    duration: '120 minutes',
+    spotsLeft: 5,
+    image: 'https://images.unsplash.com/photo-1511192336575-5a79af67a629?auto=format&fit=crop&w=300&q=80',
+    tag: '🎵 Live Session',
+    category: '🎨 Culture',
+    participants: [PARTICIPANTS.jakub, PARTICIPANTS.lukas],
+    chatPartner: PARTICIPANTS.jakub,
+    chatPartnerMessage: 'Hey! Glad you chose the secret cellar jazz night. 🎷 It is hidden deep under the Old Town cobblestones.',
+    chatPartnerReply: 'Brilliant! I will grab a table near the stage. Look out for me in a green jacket. Cheers! 🍻',
+    conversationStarters: [
+      'Do you play any musical instruments or just love live music?',
+      'What is the best underground bar or club you have visited in Prague?',
+      'What is your go-to jazz style—classic swing or modern fusion?'
+    ]
+  }
+];
 
 export default function PhoneMockup({ 
   activeScreen = 'splash', 
@@ -42,7 +142,15 @@ export default function PhoneMockup({
 }: PhoneMockupProps) {
   const [localScreen, setLocalScreen] = useState<ScreenState>(activeScreen as ScreenState);
   
-  // Onboarding states
+  // Loading & State Simulators
+  const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
+  const [hasJoined, setHasJoined] = useState(false);
+
+  // Active Experience Data pointer
+  const [activeExp, setActiveExp] = useState<Experience>(EXPERIENCES[0]);
+
+  // Onboarding inputs
   const [intentions, setIntentions] = useState<string[]>([]);
   const [vibes, setVibes] = useState<string[]>([]);
   const [selectedExperience, setSelectedExperience] = useState<string>('');
@@ -50,22 +158,16 @@ export default function PhoneMockup({
   const [profileAge, setProfileAge] = useState('26');
   const [profileIntro, setProfileIntro] = useState('Weekend explorer. Coffee addict. Always looking for hidden places.');
 
-  // Detail screen state
+  // Detail screen confirmation sheet
   const [showJoinSheet, setShowJoinSheet] = useState(false);
 
-  // Chat states
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
-    {
-      id: 'm1',
-      sender: 'klara',
-      text: 'Hey! Super excited for the Golden Hour walk this Friday. 🌅 Have you been to Letná Park before?',
-      time: '8:44 PM'
-    }
-  ]);
+  // Chat message logs mapping to active partner
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [typedMessage, setTypedMessage] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
   const chatScrollRef = useRef<HTMLDivElement>(null);
 
-  // Feedback states
+  // Feedback inputs
   const [rating, setRating] = useState('');
   const [nextAdventure, setNextAdventure] = useState<boolean | null>(null);
 
@@ -77,12 +179,36 @@ export default function PhoneMockup({
     if (chatScrollRef.current) {
       chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
     }
-  }, [chatMessages]);
+  }, [chatMessages, isTyping]);
+
+  // Sync initial chat messages when active experience changes
+  useEffect(() => {
+    setChatMessages([
+      {
+        id: 'init-msg',
+        sender: 'partner',
+        text: activeExp.chatPartnerMessage,
+        time: '8:44 PM'
+      }
+    ]);
+  }, [activeExp]);
+
+  const triggerTransition = (target: ScreenState, message: string, delay: number) => {
+    setLoading(true);
+    setLoadingMessage(message);
+    setTimeout(() => {
+      setLoading(false);
+      setLocalScreen(target);
+      if (onScreenChange) onScreenChange(target);
+    }, delay);
+  };
 
   const handleScreenChange = (id: ScreenState) => {
-    setLocalScreen(id);
-    if (onScreenChange) {
-      onScreenChange(id);
+    if (id === 'discover' && localScreen === 'onboarding_ready') {
+      triggerTransition('discover', 'Curating your Prague vibe feed...', 1200);
+    } else {
+      setLocalScreen(id);
+      if (onScreenChange) onScreenChange(id);
     }
   };
 
@@ -102,6 +228,12 @@ export default function PhoneMockup({
     }
   };
 
+  const handleJoinSelection = () => {
+    setShowJoinSheet(false);
+    triggerTransition('connection', 'Connecting you with other participants...', 1100);
+    setHasJoined(true);
+  };
+
   const handleSendMessage = () => {
     if (!typedMessage.trim()) return;
     
@@ -114,13 +246,15 @@ export default function PhoneMockup({
     
     setChatMessages(prev => [...prev, newMsg]);
     setTypedMessage('');
+    setIsTyping(true);
 
-    // Simulate reply from Klara
+    // Simulate reply from the specific experience's partner
     setTimeout(() => {
+      setIsTyping(false);
       const replyMsg: ChatMessage = {
         id: Math.random().toString(),
-        sender: 'klara',
-        text: "That sounds awesome! Let's meet near the Hanavský Pavilion at 19:00. See you there! 🙌",
+        sender: 'partner',
+        text: activeExp.chatPartnerReply,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setChatMessages(prev => [...prev, replyMsg]);
@@ -147,7 +281,7 @@ export default function PhoneMockup({
       <div className="w-full h-full bg-[#080A10] rounded-[38px] overflow-hidden relative flex flex-col text-neutral-200 select-none font-sans">
         
         {/* Top Status Bar */}
-        <div className="h-10 pt-3 px-6 flex justify-between items-center text-[11px] font-semibold text-neutral-400 z-40 bg-[#080A10]/90 backdrop-blur-md">
+        <div className="h-10 pt-3 px-6 flex justify-between items-center text-[11px] font-semibold text-neutral-400 z-40 bg-[#080A10]/95 backdrop-blur-md">
           <span>19:05</span>
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] text-brand-orange bg-brand-orange/10 px-1.5 py-0.2 rounded font-bold">PRG</span>
@@ -158,148 +292,163 @@ export default function PhoneMockup({
           </div>
         </div>
 
+        {/* LOADING LAYER OVERLAY */}
+        <AnimatePresence>
+          {loading && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-[#080A10]/95 z-50 flex flex-col items-center justify-center gap-4 text-center px-6"
+            >
+              <RefreshCw className="w-8 h-8 text-brand-orange animate-spin" />
+              <p className="text-xs font-bold text-neutral-200 mt-2">{loadingMessage}</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Screen Content Viewport */}
         <div className="flex-1 overflow-y-auto px-4 pb-16 pt-2 relative no-scrollbar flex flex-col justify-between">
           <AnimatePresence mode="wait">
-            <motion.div
-              key={localScreen}
-              initial={{ opacity: 0, x: 15 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -15 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-              className="flex-1 flex flex-col h-full justify-between"
-            >
-              {/* 1. SPLASH SCREEN */}
-              {localScreen === 'splash' && (
-                <div className="flex-1 flex flex-col justify-between items-center py-6 text-center">
-                  <div className="my-auto space-y-8 flex flex-col items-center">
-                    {/* Animated Glassmorphic Gateway Logo */}
-                    <div className="w-24 h-24 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center relative shadow-2xl overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-tr from-brand-orange/20 to-brand-teal/20"></div>
-                      <div className="w-10 h-16 bg-brand-orange/80 rounded-full rotate-[-15deg] absolute left-6 shadow-lg"></div>
-                      <div className="w-10 h-16 bg-brand-yellow/80 rounded-full rotate-[15deg] absolute right-6 shadow-lg"></div>
+            {!loading && (
+              <motion.div
+                key={localScreen}
+                initial={{ opacity: 0, x: 15 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -15 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="flex-1 flex flex-col h-full justify-between"
+              >
+                {/* 1. SPLASH SCREEN */}
+                {localScreen === 'splash' && (
+                  <div className="flex-1 flex flex-col justify-between items-center py-6 text-center">
+                    <div className="my-auto space-y-8 flex flex-col items-center">
+                      <div className="w-24 h-24 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center relative shadow-2xl overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-tr from-brand-orange/20 to-brand-teal/20"></div>
+                        <div className="w-10 h-16 bg-brand-orange/80 rounded-full rotate-[-15deg] absolute left-6 shadow-lg"></div>
+                        <div className="w-10 h-16 bg-brand-yellow/80 rounded-full rotate-[15deg] absolute right-6 shadow-lg"></div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <h3 className="text-3xl font-black tracking-tight text-white font-display">Beyond Hello</h3>
+                        <p className="text-sm text-neutral-400 font-medium">Meet people through experiences</p>
+                      </div>
                     </div>
 
-                    <div className="space-y-3">
-                      <h3 className="text-3xl font-black tracking-tight text-white font-display">Beyond Hello</h3>
-                      <p className="text-sm text-neutral-400 font-medium">Meet people through experiences</p>
+                    <div className="w-full space-y-3">
+                      <button 
+                        onClick={() => handleScreenChange('onboarding_welcome')}
+                        className="w-full bg-brand-orange hover:bg-brand-orange/95 text-white font-bold py-3.5 rounded-2xl transition-all shadow-lg hover:shadow-brand-orange/20 flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        Get Started <ArrowRight className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => handleScreenChange('discover')}
+                        className="w-full bg-neutral-900 hover:bg-neutral-800 text-neutral-400 text-xs font-semibold py-3 rounded-2xl transition-colors cursor-pointer border border-neutral-800"
+                      >
+                        Already have an account? Log in
+                      </button>
                     </div>
                   </div>
+                )}
 
-                  <div className="w-full space-y-3">
+                {/* 2. ONBOARDING WELCOME */}
+                {localScreen === 'onboarding_welcome' && (
+                  <div className="flex-1 flex flex-col justify-between py-6 text-center">
+                    <div className="my-auto space-y-6 flex flex-col items-center">
+                      <div className="w-16 h-16 rounded-full bg-brand-orange/15 border border-brand-orange/30 flex items-center justify-center">
+                        <Sparkles className="w-8 h-8 text-brand-orange" />
+                      </div>
+                      <h3 className="text-2xl font-black text-white leading-tight font-display">Dating should feel{"\n"}exciting again.</h3>
+                      <p className="text-sm text-neutral-400 leading-relaxed max-w-[240px]">
+                        Meet people through experiences, not endless chats.
+                      </p>
+                    </div>
+                    
                     <button 
-                      onClick={() => handleScreenChange('onboarding_welcome')}
-                      className="w-full bg-brand-orange hover:bg-brand-orange/95 text-white font-bold py-3.5 rounded-2xl transition-all shadow-lg hover:shadow-brand-orange/20 flex items-center justify-center gap-2 cursor-pointer"
+                      onClick={() => handleScreenChange('onboarding_intentions')}
+                      className="w-full bg-brand-orange hover:bg-brand-orange/95 text-white font-bold py-3.5 rounded-2xl transition-colors cursor-pointer"
                     >
-                      Get Started <ArrowRight className="w-4 h-4" />
+                      Continue
                     </button>
+                  </div>
+                )}
+
+                {/* 3. ONBOARDING INTENTIONS */}
+                {localScreen === 'onboarding_intentions' && (
+                  <div className="flex-1 flex flex-col justify-between py-6">
+                    <div className="space-y-4">
+                      <span className="text-[10px] font-bold text-brand-orange uppercase tracking-wider">Step 2 of 7</span>
+                      <h4 className="text-lg font-bold text-white">What are you looking for?</h4>
+                      <p className="text-xs text-neutral-400">Select one or multiple options</p>
+
+                      <div className="space-y-2.5 pt-2">
+                        {[
+                          '❤️ A meaningful relationship',
+                          '✨ New experiences',
+                          '🌍 Meeting interesting people',
+                          '🏙 Exploring Prague'
+                        ].map(opt => {
+                          const isSelected = intentions.includes(opt);
+                          return (
+                            <button
+                              key={opt}
+                              onClick={() => toggleIntention(opt)}
+                              className={`w-full text-left px-4 py-3 rounded-2xl border text-xs font-semibold transition-all flex justify-between items-center ${isSelected ? 'border-brand-orange bg-brand-orange/5 text-white' : 'border-neutral-850 bg-white/3 hover:bg-white/5 text-neutral-300'}`}
+                            >
+                              <span>{opt}</span>
+                              {isSelected && <CheckCircle2 className="w-4 h-4 text-brand-orange" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
                     <button 
-                      onClick={() => handleScreenChange('discover')}
-                      className="w-full bg-neutral-900 hover:bg-neutral-800 text-neutral-400 text-xs font-semibold py-3 rounded-2xl transition-colors cursor-pointer border border-neutral-800"
+                      disabled={intentions.length === 0}
+                      onClick={() => handleScreenChange('onboarding_vibes')}
+                      className={`w-full font-bold py-3.5 rounded-2xl transition-all ${intentions.length > 0 ? 'bg-brand-orange text-white cursor-pointer' : 'bg-neutral-800 text-neutral-500 cursor-not-allowed'}`}
                     >
-                      Already have an account? Log in
+                      Continue
                     </button>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* 2. ONBOARDING WELCOME */}
-              {localScreen === 'onboarding_welcome' && (
-                <div className="flex-1 flex flex-col justify-between py-6 text-center">
-                  <div className="my-auto space-y-6 flex flex-col items-center">
-                    <div className="w-16 h-16 rounded-full bg-brand-orange/15 border border-brand-orange/30 flex items-center justify-center">
-                      <Sparkles className="w-8 h-8 text-brand-orange" />
+                {/* 4. ONBOARDING VIBES */}
+                {localScreen === 'onboarding_vibes' && (
+                  <div className="flex-1 flex flex-col justify-between py-6">
+                    <div className="space-y-4">
+                      <span className="text-[10px] font-bold text-brand-orange uppercase tracking-wider">Step 3 of 7</span>
+                      <h4 className="text-lg font-bold text-white">What kind of experiences do you enjoy?</h4>
+                      <p className="text-xs text-neutral-400">Select all that describe your vibe</p>
+
+                      <div className="grid grid-cols-2 gap-2.5 pt-2">
+                        {[
+                          '☕ Coffee & conversations',
+                          '🍷 Food & drinks',
+                          '🎨 Culture & creativity',
+                          '🌳 Outdoor adventures',
+                          '🎵 Music & events',
+                          '🎲 Games & fun'
+                        ].map(v => {
+                          const isSelected = vibes.includes(v);
+                          return (
+                            <button
+                              key={v}
+                              onClick={() => toggleVibe(v)}
+                              className={`px-3 py-4 rounded-2xl border text-[11px] font-semibold transition-all text-center flex flex-col justify-center items-center gap-1 ${isSelected ? 'border-brand-orange bg-brand-orange/5 text-white' : 'border-neutral-850 bg-white/3 hover:bg-white/5 text-neutral-400'}`}
+                            >
+                              <span>{v}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
-                    <h3 className="text-2xl font-black text-white leading-tight font-display">Dating should feel{"\n"}exciting again.</h3>
-                    <p className="text-sm text-neutral-400 leading-relaxed max-w-[240px]">
-                      Meet people through experiences, not endless chats.
-                    </p>
-                  </div>
-                  
-                  <button 
-                    onClick={() => handleScreenChange('onboarding_intentions')}
-                    className="w-full bg-brand-orange hover:bg-brand-orange/95 text-white font-bold py-3.5 rounded-2xl transition-colors cursor-pointer"
-                  >
-                    Continue
-                  </button>
-                </div>
-              )}
 
-              {/* 3. ONBOARDING INTENTIONS */}
-              {localScreen === 'onboarding_intentions' && (
-                <div className="flex-1 flex flex-col justify-between py-6">
-                  <div className="space-y-4">
-                    <span className="text-[10px] font-bold text-brand-orange uppercase tracking-wider">Step 2 of 7</span>
-                    <h4 className="text-lg font-bold text-white">What are you looking for?</h4>
-                    <p className="text-xs text-neutral-400">Select one or multiple options</p>
-
-                    <div className="space-y-2.5 pt-2">
-                      {[
-                        '❤️ A meaningful relationship',
-                        '✨ New experiences',
-                        '🌍 Meeting interesting people',
-                        '🏙 Exploring Prague'
-                      ].map(opt => {
-                        const isSelected = intentions.includes(opt);
-                        return (
-                          <button
-                            key={opt}
-                            onClick={() => toggleIntention(opt)}
-                            className={`w-full text-left px-4 py-3 rounded-2xl border text-xs font-semibold transition-all flex justify-between items-center ${isSelected ? 'border-brand-orange bg-brand-orange/5 text-white' : 'border-neutral-850 bg-white/3 hover:bg-white/5 text-neutral-300'}`}
-                          >
-                            <span>{opt}</span>
-                            {isSelected && <CheckCircle2 className="w-4 h-4 text-brand-orange" />}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <button 
-                    disabled={intentions.length === 0}
-                    onClick={() => handleScreenChange('onboarding_vibes')}
-                    className={`w-full font-bold py-3.5 rounded-2xl transition-all ${intentions.length > 0 ? 'bg-brand-orange text-white cursor-pointer' : 'bg-neutral-800 text-neutral-500 cursor-not-allowed'}`}
-                  >
-                    Continue
-                  </button>
-                </div>
-              )}
-
-              {/* 4. ONBOARDING VIBES */}
-              {localScreen === 'onboarding_vibes' && (
-                <div className="flex-1 flex flex-col justify-between py-6">
-                  <div className="space-y-4">
-                    <span className="text-[10px] font-bold text-brand-orange uppercase tracking-wider">Step 3 of 7</span>
-                    <h4 className="text-lg font-bold text-white">What kind of experiences do you enjoy?</h4>
-                    <p className="text-xs text-neutral-400">Select all that describe your vibe</p>
-
-                    <div className="grid grid-cols-2 gap-2.5 pt-2">
-                      {[
-                        '☕ Coffee & conversations',
-                        '🍷 Food & drinks',
-                        '🎨 Culture & creativity',
-                        '🌳 Outdoor adventures',
-                        '🎵 Music & events',
-                        '🎲 Games & fun'
-                      ].map(v => {
-                        const isSelected = vibes.includes(v);
-                        return (
-                          <button
-                            key={v}
-                            onClick={() => toggleVibe(v)}
-                            className={`px-3 py-4 rounded-2xl border text-[11px] font-semibold transition-all text-center flex flex-col justify-center items-center gap-1 ${isSelected ? 'border-brand-orange bg-brand-orange/5 text-white' : 'border-neutral-850 bg-white/3 hover:bg-white/5 text-neutral-400'}`}
-                          >
-                            <span>{v}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <button 
-                    disabled={vibes.length === 0}
-                    onClick={() => handleScreenChange('onboarding_experience')}
-                    className={`w-full font-bold py-3.5 rounded-2xl transition-all ${vibes.length > 0 ? 'bg-brand-orange text-white cursor-pointer' : 'bg-neutral-800 text-neutral-500 cursor-not-allowed'}`}
+                    <button 
+                      disabled={vibes.length === 0}
+                      onClick={() => handleScreenChange('onboarding_experience')}
+                      className={`w-full font-bold py-3.5 rounded-2xl transition-all ${vibes.length > 0 ? 'bg-brand-orange text-white cursor-pointer' : 'bg-neutral-800 text-neutral-500 cursor-not-allowed'}`}
                   >
                     Continue
                   </button>
@@ -353,7 +502,6 @@ export default function PhoneMockup({
                     <span className="text-[10px] font-bold text-brand-orange uppercase tracking-wider">Step 5 of 7</span>
                     <h4 className="text-lg font-bold text-white">Create your profile</h4>
 
-                    {/* Profile Photo Mock */}
                     <div className="w-16 h-16 rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center mx-auto mb-2 text-neutral-400">
                       <Camera className="w-6 h-6" />
                     </div>
@@ -448,7 +596,7 @@ export default function PhoneMockup({
               {localScreen === 'discover' && (
                 <div className="flex-1 flex flex-col py-1 text-left">
                   {/* Header */}
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-3.5">
                     <div>
                       <span className="text-[11px] font-bold text-neutral-400">Good evening 👋</span>
                       <h4 className="text-sm font-black text-white mt-0.5">📍 Prague</h4>
@@ -462,49 +610,52 @@ export default function PhoneMockup({
                     </div>
                   </div>
 
-                  <h5 className="text-base font-black text-white leading-tight mb-4">What would you like to experience?</h5>
+                  <h5 className="text-sm font-black text-white leading-tight mb-3">What would you like to experience?</h5>
 
-                  {/* Featured Card */}
-                  <div className="bg-white/4 border border-white/8 rounded-3xl p-3 flex flex-col gap-2.5 mb-5 relative overflow-hidden">
-                    <div className="w-full h-24 rounded-2xl overflow-hidden relative">
-                      <img 
-                        src="https://images.unsplash.com/photo-1541963463532-d68292c34b19?auto=format&fit=crop&w=300&q=80" 
-                        alt="Prague Sunset" 
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/80 to-transparent"></div>
-                      <span className="absolute top-2 left-2 bg-black/60 text-[8px] font-bold text-[#FFB853] px-2 py-0.5 rounded border border-white/5">⭐ Featured Quest</span>
-                    </div>
+                  {/* Scrolling Feed of multiple realistic experiences */}
+                  <div className="space-y-3.5 max-h-[300px] overflow-y-auto pr-0.5 no-scrollbar">
+                    {EXPERIENCES.map(exp => (
+                      <div 
+                        key={exp.id} 
+                        onClick={() => { setActiveExp(exp); handleScreenChange('detail'); }}
+                        className="bg-white/4 border border-white/8 hover:border-brand-orange/40 rounded-3xl p-3 flex flex-col gap-2 relative overflow-hidden transition-all cursor-pointer"
+                      >
+                        <div className="w-full h-24 rounded-2xl overflow-hidden relative">
+                          <img 
+                            src={exp.image} 
+                            alt={exp.title} 
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/80 to-transparent"></div>
+                          <span className="absolute top-2 left-2 bg-black/70 text-[8px] font-bold text-[#FFB853] px-2 py-0.5 rounded border border-white/5">{exp.tag}</span>
+                        </div>
 
-                    <div>
-                      <h6 className="text-sm font-bold text-white">Golden Hour Prague Walk</h6>
-                      <p className="text-[10px] text-neutral-400 mt-0.5">Discover hidden views of Prague with interesting people.</p>
-                      
-                      {/* details */}
-                      <div className="grid grid-cols-2 gap-2 mt-3 text-[9px] text-neutral-300 font-semibold border-t border-white/5 pt-2.5">
-                        <div>📍 Letná Park</div>
-                        <div>🕒 18:30</div>
-                        <div>⏱️ 2 hours</div>
-                        <div>👥 6 spots left</div>
+                        <div>
+                          <h6 className="text-xs font-bold text-white flex items-center justify-between">
+                            <span>{exp.title}</span>
+                            <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />
+                          </h6>
+                          <p className="text-[9.5px] text-neutral-400 mt-0.5">{exp.description}</p>
+                          
+                          <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 mt-2.5 text-[8.5px] text-neutral-300 font-semibold border-t border-white/5 pt-2">
+                            <div>📍 {exp.location}</div>
+                            <div>🕒 {exp.time}</div>
+                            <div>⏱️ {exp.duration}</div>
+                            <div>👥 {exp.spotsLeft} spots left</div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-
-                    <button 
-                      onClick={() => handleScreenChange('detail')}
-                      className="w-full bg-brand-orange hover:bg-brand-orange/95 text-white text-xs font-bold py-2 rounded-xl flex items-center justify-center gap-1 transition-colors cursor-pointer"
-                    >
-                      I'm interested ✨
-                    </button>
+                    ))}
                   </div>
 
                   {/* Categories */}
-                  <div className="mb-2">
-                    <p className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-2.5">Experience Categories</p>
-                    <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+                  <div className="mt-3.5">
+                    <p className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest mb-2">Experience Categories</p>
+                    <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
                       {['☕ Coffee', '🍷 Food & Drinks', '🎨 Culture', '🌳 Outdoors', '🎵 Music', '🎲 Games'].map((c, i) => (
                         <span 
                           key={c} 
-                          className={`text-[10px] font-bold px-3 py-1.5 rounded-full flex-shrink-0 border ${i === 1 ? 'border-brand-orange bg-brand-orange/10 text-white' : 'border-neutral-850 bg-white/2 text-neutral-400'}`}
+                          className="text-[9px] font-bold px-2.5 py-1.5 rounded-full flex-shrink-0 border border-neutral-850 bg-white/2 text-neutral-400"
                         >
                           {c}
                         </span>
@@ -516,13 +667,13 @@ export default function PhoneMockup({
 
               {/* 10. EXPERIENCE DETAIL SCREEN */}
               {localScreen === 'detail' && (
-                <div className="flex-1 flex flex-col py-1 text-left relative h-full">
+                <div className="flex-1 flex flex-col py-1 text-left relative h-full justify-between">
                   <div className="overflow-y-auto no-scrollbar max-h-[380px] space-y-4">
                     {/* Immersive Photo Header */}
                     <div className="w-full h-28 rounded-2xl overflow-hidden relative">
                       <img 
-                        src="https://images.unsplash.com/photo-1541963463532-d68292c34b19?auto=format&fit=crop&w=300&q=80" 
-                        alt="Sunset" 
+                        src={activeExp.image} 
+                        alt={activeExp.title} 
                         className="w-full h-full object-cover"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 to-transparent"></div>
@@ -535,17 +686,17 @@ export default function PhoneMockup({
                     </div>
 
                     <div>
-                      <h4 className="text-base font-black text-white">Golden Hour Prague Walk ✨</h4>
-                      <p className="text-xs text-neutral-400 mt-1">A relaxed evening exploring Prague's hidden viewpoints with interesting people.</p>
+                      <h4 className="text-sm font-black text-white">{activeExp.title} ✨</h4>
+                      <p className="text-[11px] text-neutral-400 mt-1">{activeExp.description}</p>
                     </div>
 
                     {/* Details Cards */}
                     <div className="grid grid-cols-2 gap-2 text-left">
                       {[
-                        { label: 'Location', val: 'Letná Park' },
-                        { label: 'Time', val: 'Friday 19:00' },
-                        { label: 'Duration', val: '90 minutes' },
-                        { label: 'Participants', val: '8 people joining' }
+                        { label: 'Location', val: activeExp.location },
+                        { label: 'Time', val: activeExp.time },
+                        { label: 'Duration', val: activeExp.duration },
+                        { label: 'Participants', val: `${activeExp.participants.length + 5} people joining` }
                       ].map(d => (
                         <div key={d.label} className="bg-white/3 border border-white/5 rounded-xl p-2.5">
                           <span className="text-[8px] font-bold text-neutral-500 uppercase block">{d.label}</span>
@@ -556,19 +707,19 @@ export default function PhoneMockup({
 
                     {/* Timeline: What Happens */}
                     <div className="space-y-2 pt-2 border-t border-white/5">
-                      <h5 className="text-xs font-bold text-white uppercase tracking-wider">What happens?</h5>
-                      <div className="space-y-3 pl-1 pt-1.5">
+                      <h5 className="text-[10px] font-bold text-white uppercase tracking-wider">What happens?</h5>
+                      <div className="space-y-3 pl-1 pt-1">
                         {[
-                          { step: '1', title: 'Meet', desc: 'Gather at Letná Beer Garden entrance.' },
-                          { step: '2', title: 'Explore', desc: 'Walk toward the best viewpoint.' },
-                          { step: '3', title: 'Conversation prompts', desc: 'Fun game cards to bypass small talk.' },
+                          { step: '1', title: 'Meet', desc: `Gather at ${activeExp.location} entrance.` },
+                          { step: '2', title: 'Explore & Puzzle', desc: 'Unblock interactive tasks with your group.' },
+                          { step: '3', title: 'Conversation prompt', desc: 'Low-pressure prompts to trigger sharing.' },
                           { step: '4', title: 'Continue', desc: 'Sunset drinks or coffee.' }
                         ].map((t) => (
                           <div key={t.step} className="flex gap-3 items-start">
                             <span className="w-5 h-5 rounded-full bg-brand-orange/10 border border-brand-orange/30 flex items-center justify-center text-[10px] font-bold text-brand-orange shrink-0">{t.step}</span>
                             <div>
-                              <p className="text-xs font-bold text-neutral-200">{t.title}</p>
-                              <p className="text-[10px] text-neutral-500 mt-0.5">{t.desc}</p>
+                              <p className="text-[11px] font-bold text-neutral-200">{t.title}</p>
+                              <p className="text-[9.5px] text-neutral-500 mt-0.5">{t.desc}</p>
                             </div>
                           </div>
                         ))}
@@ -577,11 +728,11 @@ export default function PhoneMockup({
 
                     {/* People Joining */}
                     <div className="space-y-2 pt-2 border-t border-white/5">
-                      <h5 className="text-xs font-bold text-white uppercase tracking-wider">People joining</h5>
+                      <h5 className="text-[10px] font-bold text-white uppercase tracking-wider">People joining</h5>
                       <div className="space-y-2">
-                        {PARTICIPANTS.map(p => (
+                        {activeExp.participants.map(p => (
                           <div key={p.id} className="bg-white/2 border border-white/5 rounded-xl p-2 flex items-center gap-3">
-                            <img source={{ uri: p.photo }} style={{ width: '32px', height: '32px', borderRadius: '16px' }} className="w-8 h-8 rounded-full object-cover" />
+                            <img src={p.photo} alt={p.name} className="w-8 h-8 rounded-full object-cover" />
                             <div>
                               <p className="text-xs font-bold text-white">{p.name}, {p.age}</p>
                               <p className="text-[9px] text-neutral-500 mt-0.5">Vibes: {p.interest}</p>
@@ -594,7 +745,7 @@ export default function PhoneMockup({
 
                   <button 
                     onClick={handleOpenConfirm}
-                    className="w-full bg-brand-orange hover:bg-brand-orange/95 text-white font-bold py-3.5 rounded-2xl transition-colors cursor-pointer mt-4"
+                    className="w-full bg-brand-orange hover:bg-brand-orange/95 text-white font-bold py-3 rounded-xl transition-colors cursor-pointer mt-4"
                   >
                     Join Experience
                   </button>
@@ -606,22 +757,22 @@ export default function PhoneMockup({
                         initial={{ y: 200, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: 200, opacity: 0 }}
-                        className="absolute bottom-0 left-[-16px] right-[-16px] bg-[#12131C] border-t border-white/10 rounded-t-3xl p-5 z-50 text-center shadow-2xl flex flex-col gap-3"
+                        className="absolute bottom-[-10px] left-[-16px] right-[-16px] bg-[#12131C] border-t border-white/10 rounded-t-3xl p-5 z-50 text-center shadow-2xl flex flex-col gap-3"
                       >
                         <div className="w-10 h-1 bg-white/15 rounded-full mx-auto mb-2"></div>
-                        <h5 className="text-base font-black text-white leading-tight">You're joining{"\n"}Golden Hour Prague Walk ✨</h5>
-                        <p className="text-[11px] text-neutral-400">Choose how you would like to participate.</p>
+                        <h5 className="text-sm font-black text-white leading-tight">You're joining{"\n"}{activeExp.title} ✨</h5>
+                        <p className="text-[10px] text-neutral-400">Choose how you would like to participate.</p>
                         
-                        <div className="flex flex-col gap-2 pt-2">
+                        <div className="flex flex-col gap-2 pt-1">
                           <button 
-                            onClick={() => { setShowJoinSheet(false); handleScreenChange('connection'); }}
-                            className="w-full bg-brand-orange text-white text-xs font-bold py-3 rounded-xl cursor-pointer"
+                            onClick={handleJoinSelection}
+                            className="w-full bg-brand-orange text-white text-xs font-bold py-2.5 rounded-xl cursor-pointer"
                           >
                             Join solo
                           </button>
                           <button 
-                            onClick={() => { setShowJoinSheet(false); handleScreenChange('connection'); }}
-                            className="w-full bg-white/5 border border-white/10 text-white text-xs font-semibold py-3 rounded-xl cursor-pointer"
+                            onClick={handleJoinSelection}
+                            className="w-full bg-white/5 border border-white/10 text-white text-xs font-semibold py-2.5 rounded-xl cursor-pointer"
                           >
                             Invite someone
                           </button>
@@ -638,12 +789,12 @@ export default function PhoneMockup({
                   <div className="my-auto space-y-8 flex flex-col items-center">
                     <span className="text-[10px] font-black tracking-widest text-brand-teal bg-brand-teal/10 px-3 py-1 rounded-full uppercase">Connection Sparked</span>
                     
-                    <h4 className="text-xl font-black text-white leading-tight font-display">Beyond Hello Connection ✨</h4>
+                    <h4 className="text-lg font-black text-white leading-tight font-display">Beyond Hello Connection ✨</h4>
                     
                     {/* Intertwined Avatars */}
                     <div className="flex items-center justify-center -space-x-4">
                       <div className="w-16 h-16 rounded-full border-4 border-[#080A10] overflow-hidden shadow-xl">
-                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" alt="Klara" className="w-full h-full object-cover" />
+                        <img src={activeExp.chatPartner.photo} alt={activeExp.chatPartner.name} className="w-full h-full object-cover" />
                       </div>
                       <div className="w-8 h-8 rounded-full bg-brand-orange border-2 border-[#080A10] flex items-center justify-center text-xs font-bold text-white z-10">✨</div>
                       <div className="w-16 h-16 rounded-full border-4 border-[#080A10] bg-neutral-800 flex items-center justify-center text-xs text-neutral-400 font-bold shadow-xl">
@@ -652,7 +803,7 @@ export default function PhoneMockup({
                     </div>
 
                     <p className="text-xs text-neutral-400 px-4 leading-relaxed">
-                      You both connected around <Text className="font-bold text-white">Golden Hour Prague Walk</Text>.
+                      You both connected around <span className="font-bold text-white">{activeExp.title}</span>.
                     </p>
                   </div>
 
@@ -671,9 +822,9 @@ export default function PhoneMockup({
                   {/* Top Header info banner */}
                   <div className="flex items-center justify-between border-b border-white/5 pb-2.5 mb-2">
                     <div className="flex items-center gap-2">
-                      <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" className="w-7 h-7 rounded-full object-cover" />
+                      <img src={activeExp.chatPartner.photo} alt={activeExp.chatPartner.name} className="w-7 h-7 rounded-full object-cover" />
                       <div>
-                        <h5 className="text-xs font-bold text-white">Klara</h5>
+                        <h5 className="text-xs font-bold text-white">{activeExp.chatPartner.name}</h5>
                         <p className="text-[8px] text-brand-teal font-semibold">Joined walk • active</p>
                       </div>
                     </div>
@@ -682,14 +833,19 @@ export default function PhoneMockup({
                       onClick={() => handleScreenChange('feedback')}
                       className="bg-brand-orange/20 text-brand-orange text-[9px] font-bold px-2 py-1 rounded"
                     >
-                      Complete & Rate
+                      Feedback Loop
                     </button>
+                  </div>
+
+                  {/* Conversational starter cue */}
+                  <div className="bg-brand-orange/5 border border-brand-orange/15 rounded-xl p-2 mb-2 text-[8px] text-brand-orange font-semibold flex items-center gap-1.5 animate-pulse">
+                    <span>💡 Starter: "{activeExp.conversationStarters[0]}"</span>
                   </div>
 
                   {/* Scrollable messages area */}
                   <div 
                     ref={chatScrollRef}
-                    className="flex-1 overflow-y-auto no-scrollbar space-y-3 pr-1 py-1.5 max-h-[300px]"
+                    className="flex-1 overflow-y-auto no-scrollbar space-y-3 pr-1 py-1.5 max-h-[220px]"
                   >
                     {chatMessages.map(m => (
                       <div 
@@ -700,6 +856,15 @@ export default function PhoneMockup({
                         <span className="text-[8px] text-neutral-500 block text-right mt-1">{m.time}</span>
                       </div>
                     ))}
+                    
+                    {/* Realistic Typing Indicator */}
+                    {isTyping && (
+                      <div className="bg-white/3 border border-white/5 p-2 rounded-2xl rounded-tl-none max-w-[50px] self-start mr-auto flex gap-1 items-center justify-center">
+                        <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full animate-bounce"></span>
+                        <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                        <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Bottom input area */}
@@ -771,14 +936,7 @@ export default function PhoneMockup({
                     onClick={() => {
                       setRating('');
                       setNextAdventure(null);
-                      setChatMessages([
-                        {
-                          id: 'm1',
-                          sender: 'klara',
-                          text: 'Hey! Super excited for the Golden Hour walk this Friday. 🌅 Have you been to Letná Park before?',
-                          time: '8:44 PM'
-                        }
-                      ]);
+                      setHasJoined(false);
                       handleScreenChange('discover');
                     }}
                     className={`w-full font-bold py-3.5 rounded-2xl transition-all ${(rating !== '' && nextAdventure !== null) ? 'bg-brand-teal text-white cursor-pointer' : 'bg-neutral-800 text-neutral-500 cursor-not-allowed'}`}
@@ -789,39 +947,59 @@ export default function PhoneMockup({
               )}
 
             </motion.div>
+            )}
           </AnimatePresence>
         </div>
 
-        {/* Bottom Interactive Navigation Tab bar (Only visible in discovery sections) */}
+        {/* Bottom Interactive Navigation Tab bar */}
         {['discover', 'detail', 'connection', 'chat', 'feedback'].includes(localScreen) && (
           <div className="absolute bottom-0 left-0 right-0 h-16 bg-[#0E0E12]/95 border-t border-neutral-850 flex justify-around items-center px-4 pb-2 z-40 backdrop-blur-md">
+            
+            {/* Discover Tab */}
             <button 
               onClick={() => handleScreenChange('discover')} 
-              className={`flex flex-col items-center justify-center gap-0.5 transition-all ${localScreen === 'discover' ? 'text-brand-orange scale-105' : 'text-neutral-500 hover:text-neutral-300'}`}
+              className={`flex flex-col items-center justify-center gap-0.5 transition-all ${localScreen === 'discover' || localScreen === 'detail' ? 'text-brand-orange scale-105' : 'text-neutral-500 hover:text-neutral-300'}`}
             >
-              <Compass className="w-4 h-4" />
+              <CompassIcon className="w-4 h-4" />
               <span className="text-[9px] font-medium">Discover</span>
             </button>
 
+            {/* Connections Tab with Realistic Empty State support */}
             <button 
-              onClick={() => handleScreenChange('connection')} 
+              onClick={() => {
+                if (hasJoined) {
+                  handleScreenChange('connection');
+                } else {
+                  alert("📍 No Connections Yet\n\nJoin an experience first! Once you choose an experience and express interest, vibe-matched Prague partners will appear here.");
+                }
+              }} 
               className={`flex flex-col items-center justify-center gap-0.5 transition-all ${localScreen === 'connection' ? 'text-brand-orange scale-105' : 'text-neutral-500 hover:text-neutral-300'}`}
             >
               <Zap className="w-4 h-4" />
               <span className="text-[9px] font-medium">Connections</span>
             </button>
 
+            {/* Messages Tab with Realistic Empty State support */}
             <button 
-              onClick={() => handleScreenChange('chat')} 
+              onClick={() => {
+                if (hasJoined) {
+                  handleScreenChange('chat');
+                } else {
+                  alert("💬 Quiet Inbox\n\nYour message threads will unlock here once a Prague connection is established around a shared experience.");
+                }
+              }} 
               className={`flex flex-col items-center justify-center gap-0.5 transition-all ${localScreen === 'chat' ? 'text-brand-orange scale-105' : 'text-neutral-500 hover:text-neutral-300'}`}
             >
               <MessageSquare className="w-4 h-4" />
               <span className="text-[9px] font-medium">Messages</span>
             </button>
 
+            {/* Profile Tab */}
             <button 
-              onClick={() => handleScreenChange('feedback')} 
-              className={`flex flex-col items-center justify-center gap-0.5 transition-all ${localScreen === 'feedback' ? 'text-brand-orange scale-105' : 'text-neutral-500 hover:text-neutral-300'}`}
+              onClick={() => {
+                alert(`👤 Profile details:\n\nName: ${profileName}\nAge: ${profileAge}\nIntro: "${profileIntro}"\n\nRegistered to the Prague Waitlist!`);
+              }} 
+              className="flex flex-col items-center justify-center gap-0.5 text-neutral-500 hover:text-neutral-300 transition-all"
             >
               <User className="w-4 h-4" />
               <span className="text-[9px] font-medium">Profile</span>
@@ -829,11 +1007,11 @@ export default function PhoneMockup({
           </div>
         )}
 
-        {/* Small floating tooltip to indicate interactive nature */}
+        {/* Floating helper tooltip */}
         {interactive && (
-          <div className="absolute top-12 left-1/2 transform -translate-x-1/2 bg-black/85 text-[8px] text-neutral-400 font-bold px-2 py-0.5 rounded-full border border-neutral-800 flex items-center gap-1 opacity-70 pointer-events-none z-50">
-            <span className="w-1.5 h-1.5 bg-brand-orange rounded-full animate-ping"></span>
-            <span>TAP OPTIONS TO STEP THROUGH USER TEST FLOW</span>
+          <div className="absolute top-12 left-1/2 transform -translate-x-1/2 bg-black/85 text-[8px] text-neutral-400 font-bold px-2.5 py-0.5 rounded-full border border-neutral-800 flex items-center gap-1 opacity-80 pointer-events-none z-50">
+            <span className="w-1.5 h-1.5 bg-brand-orange rounded-full animate-pulse"></span>
+            <span>DEMO VERSION • FOLLOW THE NATURAL STEPS</span>
           </div>
         )}
       </div>
@@ -844,9 +1022,3 @@ export default function PhoneMockup({
     setShowJoinSheet(true);
   }
 }
-
-const PARTICIPANTS = [
-  { id: 'p1', name: 'Klara', age: 26, photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100', interest: 'Coffee' },
-  { id: 'p2', name: 'Jakub', age: 28, photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100', interest: 'Cycling' },
-  { id: 'p3', name: 'Elena', age: 25, photo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100', interest: 'Reading' },
-];
